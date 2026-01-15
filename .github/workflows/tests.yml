@@ -207,7 +207,8 @@ jobs:
     if: >
       github.event_name == 'pull_request' &&
       !fromJson(needs.setup_tests.outputs.syntax-only) &&
-      fromJson(needs.setup_runners.outputs.runners_present)
+      fromJson(needs.setup_runners.outputs.runners_present) &&
+      needs.formulae_detect.outputs.testing_formulae != ''
     strategy:
       matrix:
         include: ${{fromJson(needs.setup_runners.outputs.runners)}}
@@ -225,6 +226,16 @@ jobs:
       HOMEBREW_GITHUB_API_TOKEN: ${{secrets.GITHUB_TOKEN}}
       BOTTLES_DIR: ${{matrix.workdir || github.workspace}}/bottles
     steps:
+      - name: Cache Homebrew downloads
+        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
+        with:
+          path: |
+            ~/Library/Caches/Homebrew/downloads
+            ~/.cache/Homebrew/downloads
+          key: homebrew-downloads-${{ matrix.runner }}-${{ github.sha }}
+          restore-keys: |
+            homebrew-downloads-${{ matrix.runner }}-
+
       - name: Pre-test steps
         uses: Homebrew/actions/pre-build@main
         with:
@@ -255,6 +266,8 @@ jobs:
           cleanup: ${{ matrix.cleanup }}
           bottles-directory: ${{ env.BOTTLES_DIR }}
           logs-directory: ${{ format('{0}/logs', env.BOTTLES_DIR) }}
+          upload-bottles: ${{ steps.brew-test-bot-formulae.outcome != 'success' }}
+          upload-logs: ${{ steps.brew-test-bot-formulae.outcome != 'success' }}
 
   setup_dep_tests:
     permissions:
@@ -341,7 +354,8 @@ jobs:
       github.event_name == 'pull_request' &&
       !fromJson(needs.setup_dep_tests.outputs.syntax-only) &&
       fromJson(needs.setup_dep_tests.outputs.test-dependents) &&
-      fromJson(needs.setup_dep_runners.outputs.runners_present)
+      fromJson(needs.setup_dep_runners.outputs.runners_present) &&
+      needs.formulae_detect.outputs.testing_formulae != ''
     strategy:
       matrix:
         include: ${{fromJson(needs.setup_dep_runners.outputs.runners)}}
@@ -360,6 +374,16 @@ jobs:
       BOTTLES_DIR: ${{matrix.workdir || github.workspace}}/bottles
       TESTING_FORMULAE: ${{matrix.testing_formulae}}
     steps:
+      - name: Cache Homebrew downloads
+        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
+        with:
+          path: |
+            ~/Library/Caches/Homebrew/downloads
+            ~/.cache/Homebrew/downloads
+          key: homebrew-downloads-deps-${{ matrix.runner }}-${{ github.sha }}
+          restore-keys: |
+            homebrew-downloads-deps-${{ matrix.runner }}-
+
       - name: Pre-test steps
         uses: Homebrew/actions/pre-build@main
         with:
@@ -368,6 +392,7 @@ jobs:
           download-bottles: true
 
       - name: Test dependents
+        id: brew-test-bot-dependents
         run: |
           xargs -t brew test-bot \
             --testing-formulae="$TESTING_FORMULAE" \
@@ -388,6 +413,7 @@ jobs:
           bottles-directory: ${{ env.BOTTLES_DIR }}
           logs-directory: ${{ format('{0}/logs', env.BOTTLES_DIR) }}
           upload-bottles: false
+          upload-logs: ${{ steps.brew-test-bot-dependents.outcome != 'success' }}
 
   conclusion:
     needs: [tests, test_deps, setup_tests, setup_runners]
