@@ -22,8 +22,13 @@ class Envoy < Formula
   depends_on "automake" => :build
   depends_on "bazelisk" => :build
   depends_on "cmake" => :build
+  depends_on "coreutils" => :build
+  depends_on "coreutils" => :build
+  depends_on "go" => :build
   depends_on "libtool" => :build
   depends_on "ninja" => :build
+  depends_on "pkgconf" => :build
+  depends_on "pkgconf" => :build
   depends_on "wget" => :build
   depends_on xcode: :build
   depends_on "yq" => :build
@@ -36,11 +41,8 @@ class Envoy < Formula
     depends_on "aspell" => :build
     depends_on "autoconf" => :build
     depends_on "clang-format" => :build
-    depends_on "coreutils" => :build
-    # Envoy's build system requires these according to docs
-    depends_on "go" => :build
   end
-
+  # Envoy's build system requires these according to docs
   on_linux do
     depends_on "lld" => :build
   end
@@ -74,11 +76,11 @@ class Envoy < Formula
 
       # Make Bazel/toolchains_llvm use Homebrew's LLVM instead of trying to download a prebuilt
 
-      Formula["llvm"].opt_prefix
+      llvm_prefix=Formula["llvm"].opt_prefix
       args << "--config=clang-local"
       # also pass it through Bazel action environment to ensure repository rules see it
-      # args << "--repo_env=BAZEL_LLVM_PATH=#{llvm_prefix}"
-      # args << "--action_env=BAZEL_LLVM_PATH=#{llvm_prefix}"
+      args << "--repo_env=BAZEL_LLVM_PATH=#{llvm_prefix}"
+      args << "--action_env=BAZEL_LLVM_PATH=#{llvm_prefix}"
       # args << "--copt=-I#{Formula["llvm"].opt_include}"
     end
 
@@ -95,7 +97,8 @@ class Envoy < Formula
     end
 
     inreplace "bazel/toolchains.bzl" do |s|
-      s.gsub!(/llvm_version = "[\w.?]*",/, 'llvm_version = "20.1.7",')
+      # TODO: dont hardcode the version. use from formula.
+      s.gsub!(/llvm_version = "[\w.?]*",/, 'llvm_version = "21.1.8",')
     end
 
     # Write the current version SOURCE_VERSION.
