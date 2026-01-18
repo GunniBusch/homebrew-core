@@ -66,16 +66,16 @@ class Envoy < Formula
     if OS.linux?
       # Workaround to build with Clang 20 until envoy uses newer dd-trace-cpp (with newer nlohmann-json)
       # https://github.com/DataDog/dd-trace-cpp/commit/a7d71b5e0599125d5957f7b8d3d56f0bcc6ae485
-      # args << "--copt=-Wno-deprecated-literal-operator"
+      args << "--copt=-Wno-deprecated-literal-operator"
 
       # Workaround to build with Clang 21, upstream also ignores this warning
       # https://github.com/google/cel-cpp/blob/439003a0016ed7ace068cffdf494357a3f75e3b2/common/values/value_variant.h#L735-L743
-      # args << "--copt=-Wno-nontrivial-memcall"
+      args << "--copt=-Wno-nontrivial-memcall"
 
       # Make Bazel/toolchains_llvm use Homebrew's LLVM instead of trying to download a prebuilt
 
       Formula["llvm"].opt_prefix
-      args << "--config=clang"
+      args << "--config=clang-local"
       # also pass it through Bazel action environment to ensure repository rules see it
       # args << "--repo_env=BAZEL_LLVM_PATH=#{llvm_prefix}"
       # args << "--action_env=BAZEL_LLVM_PATH=#{llvm_prefix}"
