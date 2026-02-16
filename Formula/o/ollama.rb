@@ -68,7 +68,10 @@ class Ollama < Formula
       mlx_args << "-tags=mlx"
     end
 
-    system "go", "generate", *mlx_args, "./..."
+    # Upstream Darwin release builds compile with `-tags=mlx` but do not run
+    # `go generate` for MLX; running it here regenerates wrappers that can
+    # conflict with current mlx-c headers.
+    system "go", "generate", "./..." if !OS.mac? || !Hardware::CPU.arm?
     system "go", "build", *mlx_args, *std_go_args(ldflags:)
   end
 
