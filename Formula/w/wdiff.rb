@@ -1,5 +1,5 @@
 class Wdiff < Formula
-  desc "Display word differences between text files"
+  desc "Display word differences between text files (test)"
   homepage "https://www.gnu.org/software/wdiff/"
   url "https://ftpmirror.gnu.org/gnu/wdiff/wdiff-1.2.2.tar.gz"
   mirror "https://ftp.gnu.org/gnu/wdiff/wdiff-1.2.2.tar.gz"
