@@ -6,7 +6,7 @@ class Wally < Formula
   license "MPL-2.0"
   head "https://github.com/UpliftGames/wally.git", branch: "main"
 
-  no_autobump! because: :requires_manual_review
+  no_autobump! because: :bumped_by_upstream
 
   bottle do
     rebuild 1
