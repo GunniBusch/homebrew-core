@@ -10,9 +10,6 @@ class Duplicity < Formula
   license "GPL-2.0-or-later"
   revision 5
 
-  # FIXME: Fails trying to resolve lxml as needs `libxml2`/`libxslt` installed
-  no_autobump! because: "`update-python-resources` cannot determine dependencies"
-
   bottle do
     sha256 cellar: :any,                 arm64_tahoe:   "bc0eb712ad7514dc84479250cd34c6902e18a877dfd729ad679d5b3f94349acd"
     sha256 cellar: :any,                 arm64_sequoia: "8bc21688593bd93cf60876d53128bf84005925036838e242195b9bd3f842e4d4"
