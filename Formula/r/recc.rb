@@ -42,6 +42,13 @@ class Recc < Formula
   end
 
   def install
+    # Upstream currently assigns a nanosecond precision time_point to
+    # optional<system_clock::time_point>, which fails with libc++.
+    inreplace "common/buildboxcommon_credentialhelperauthenticator.cpp",
+              "std::chrono::nanoseconds(timestamp.nanos());",
+              "std::chrono::duration_cast<std::chrono::system_clock::duration>(" \
+              "std::chrono::nanoseconds(timestamp.nanos()));"
+
     buildbox_cmake_args = %W[
       -DCASD=ON
       -DCASD_BUILD_BENCHMARK=OFF
