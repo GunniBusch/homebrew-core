@@ -76,6 +76,7 @@ class Varnish < Formula
       testpath/"b00086.vtc",
       testpath/"u00008.vtc",
     ]
+    timeout_tests << (testpath/"b00096.vtc") if OS.mac? && MacOS.version >= :tahoe
 
     # test suites need libvmod_debug.so, see discussions in https://github.com/varnishcache/varnish-cache/issues/4393
     debug_tests = [
