@@ -1,8 +1,8 @@
 class Cdxgen < Formula
   desc "Creates CycloneDX Software Bill-of-Materials (SBOM) for projects"
   homepage "https://github.com/CycloneDX/cdxgen"
-  url "https://registry.npmjs.org/@cyclonedx/cdxgen/-/cdxgen-12.1.2.tgz"
-  sha256 "63c85691c300e0e3500c65dd3e7b2f841bd22aa1d3a56681ff5885740f4f67ff"
+  url "https://registry.npmjs.org/@cyclonedx/cdxgen/-/cdxgen-12.1.3.tgz"
+  sha256 "a8688979d6a0b5fdc2cc526d198a9df91c7804b12715452c12344c31229193c1"
   license "Apache-2.0"
 
   bottle do
@@ -42,13 +42,12 @@ class Cdxgen < Formula
     # Remove/replace pre-built binaries
     os = OS.kernel_name.downcase
     arch = Hardware::CPU.intel? ? "amd64" : Hardware::CPU.arch.to_s
+    node_arch = Hardware::CPU.intel? ? "x64" : "arm64"
     node_modules = libexec/"lib/node_modules/@cyclonedx/cdxgen/node_modules"
     cdxgen_plugins = node_modules/"@cdxgen/cdxgen-plugins-bin-#{os}-#{arch}/plugins"
-    rm_r(cdxgen_plugins/"dosai")
-    rm_r(cdxgen_plugins/"sourcekitten")
-    rm_r(cdxgen_plugins/"trivy")
+    paths_to_remove = %w[dosai sourcekitten trivy].map { |plugin| cdxgen_plugins/plugin }
     # Remove pre-built osquery plugins for macOS arm builds
-    rm_r(cdxgen_plugins/"osquery") if OS.mac? && Hardware::CPU.arm?
+    paths_to_remove << (cdxgen_plugins/"osquery") if OS.mac? && Hardware::CPU.arm?
 
     resource("dosai").stage do
       ENV["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1"
@@ -67,6 +66,11 @@ class Cdxgen < Formula
       ]
       system "dotnet", "publish", "Dosai", *args
     end
+
+    (node_modules/"@appthreat/sqlite3/prebuilds").each_child do |dir|
+      paths_to_remove << dir if dir.basename.to_s != "#{os}-#{node_arch}"
+    end
+    rm_r(paths_to_remove)
 
     # Reinstall for native dependencies
     cd node_modules/"@appthreat/atom-parsetools/plugins/rubyastgen" do
