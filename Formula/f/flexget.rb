@@ -392,7 +392,7 @@ class Flexget < Formula
   def install
     ENV["BUNDLE_WEBUI"] = "true"
     # maturin maps linker args from RUSTFLAGS into CARGO_ENCODED_RUSTFLAGS.
-    ENV.append "RUSTFLAGS", "-C link-arg=-undefined -C link-arg=dynamic_lookup" if OS.mac?
+    ENV.append "RUSTFLAGS", "-C link-arg=-undefined" if OS.mac?
 
     virtualenv_install_with_resources
   end
